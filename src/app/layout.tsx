@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SUBMITNOW - MISMO Loan Submission",
+  title: "DEFY TPO CLOUD - MISMO Loan Submission",
   description: "Seamlessly submit MISMO FNM 3.4 loan files to MeridianLink",
 };
 
@@ -23,10 +23,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            var s = localStorage.getItem('defysubmit-theme');
+            var d = s ? s === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.dataset.theme = d ? 'dark' : 'light';
+          } catch(e) { document.documentElement.dataset.theme = 'dark'; }
+        `}} />
         {children}
       </body>
     </html>

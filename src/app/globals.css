@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
+  --background: #0a0a0a;
   --foreground: #ffffff;
-  --accent: rgb(0, 245, 255);
-  --accent-dim: rgba(0, 245, 255, 0.5);
-  --accent-glow: rgba(0, 245, 255, 0.2);
+  --accent: #9ca3af;
+}
+
+[data-theme="light"] {
+  --background: #f8f9fa;
+  --foreground: #111827;
+  --accent: #6b7280;
 }
 
 * {
@@ -14,6 +18,12 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -23,60 +33,30 @@ body {
   min-height: 100vh;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 245, 255, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 245, 255, 0.5);
-}
-
-/* Selection */
 ::selection {
-  background: rgba(0, 245, 255, 0.3);
+  background: rgba(156, 163, 175, 0.3);
   color: white;
 }
 
 /* Animations */
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    box-shadow: 0 0 20px rgba(156, 163, 175, 0.1);
   }
   50% {
-    box-shadow: 0 0 40px rgba(0, 245, 255, 0.5);
+    box-shadow: 0 0 35px rgba(156, 163, 175, 0.2);
   }
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 @keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .animate-pulse-glow {
@@ -88,7 +68,7 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, rgb(0, 245, 255) 50%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--accent) 50%, var(--foreground) 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -99,7 +79,7 @@ body {
 /* Grid background */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(156, 163, 175, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(156, 163, 175, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
 }

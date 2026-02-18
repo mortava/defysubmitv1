@@ -3,16 +3,36 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, FileText, Check, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 import { cn } from "@/lib/utils";
 
-interface XMLFile { id: string; name: string; type: string; size: number; content: string; status: "pending" | "uploading" | "success" | "error"; errorMessage?: string; loanNumber?: string; }
+interface XMLFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  content: string;
+  status: "pending" | "uploading" | "success" | "error";
+  errorMessage?: string;
+  loanNumber?: string;
+}
 
-export default function XMLUploader() {
+interface XMLUploaderProps {
+  darkMode?: boolean;
+}
+
+export default function XMLUploader({ darkMode = true }: XMLUploaderProps) {
   const [files, setFiles] = useState<XMLFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Theme-aware accent classes
+  const at = darkMode ? "text-gray-400" : "text-gray-600";
+  const ab5 = darkMode ? "bg-gray-400/5" : "bg-gray-100";
+  const ab10 = darkMode ? "bg-gray-400/10" : "bg-gray-100";
+  const ab20 = darkMode ? "bg-gray-400/20" : "bg-gray-200";
+  const abrd = darkMode ? "border-gray-400" : "border-gray-500";
+  const abrd30 = darkMode ? "border-gray-400/30" : "border-gray-300";
 
   const handleFileSelect = useCallback(
     async (selectedFiles: FileList | null) => {
@@ -21,9 +41,7 @@ export default function XMLUploader() {
       const newFiles: XMLFile[] = [];
 
       for (const file of Array.from(selectedFiles)) {
-        if (!file.name.endsWith(".xml")) {
-          continue;
-        }
+        if (!file.name.endsWith(".xml")) continue;
 
         const xmlContent = await fileToText(file);
         newFiles.push({
@@ -32,24 +50,27 @@ export default function XMLUploader() {
           type: file.type,
           size: file.size,
           content: xmlContent,
-                    status: "pending",
+          status: "pending",
         });
       }
 
       setFiles((prev) => [...prev, ...newFiles]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     },
     []
   );
 
-  const fileToText = (file: File): Promise<string> => { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsText(file); reader.onload = () => { resolve(reader.result as string); }; reader.onerror = (error) => reject(error); }); };
+  const fileToText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   const updateFile = (id: string, updates: Partial<XMLFile>) => {
-    setFiles((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
-    );
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
   };
 
   const removeFile = (id: string) => {
@@ -57,8 +78,6 @@ export default function XMLUploader() {
   };
 
   const handleUploadAll = async () => {
-
-
     setIsUploading(true);
 
     for (const file of files) {
@@ -70,9 +89,7 @@ export default function XMLUploader() {
         const response = await fetch("/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            xmlContent: file.content, fileName: file.name,
-          }),
+          body: JSON.stringify({ xmlContent: file.content, fileName: file.name }),
         });
 
         const result = await response.json();
@@ -80,10 +97,7 @@ export default function XMLUploader() {
         if (result.success) {
           updateFile(file.id, { status: "success", loanNumber: result.loanNumber });
         } else {
-          updateFile(file.id, {
-            status: "error",
-            errorMessage: result.error || "Upload failed",
-          });
+          updateFile(file.id, { status: "error", errorMessage: result.error || "Upload failed" });
         }
       } catch (error) {
         updateFile(file.id, {
@@ -99,11 +113,8 @@ export default function XMLUploader() {
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -134,8 +145,10 @@ export default function XMLUploader() {
         className={cn(
           "relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300",
           dragActive
-            ? "border-[rgb(0,245,255)] bg-[rgb(0,245,255)]/5"
-            : "border-white/20 hover:border-[rgb(0,245,255)]/50 hover:bg-white/[0.02]"
+            ? `${abrd} ${ab5}`
+            : darkMode
+              ? "border-white/20 hover:border-gray-400/50 hover:bg-white/[0.02]"
+              : "border-gray-300 hover:border-gray-500/50 hover:bg-gray-50"
         )}
       >
         <input
@@ -149,18 +162,20 @@ export default function XMLUploader() {
         <div className="flex flex-col items-center gap-3">
           <div className={cn(
             "w-14 h-14 rounded-xl flex items-center justify-center transition-colors",
-            dragActive ? "bg-[rgb(0,245,255)]/20" : "bg-white/5"
+            dragActive ? ab20 : darkMode ? "bg-white/5" : "bg-gray-100"
           )}>
             <Upload className={cn(
               "w-7 h-7 transition-colors",
-              dragActive ? "text-[rgb(0,245,255)]" : "text-white/40"
+              dragActive ? at : darkMode ? "text-white/40" : "text-gray-400"
             )} />
           </div>
           <div>
-            <p className="text-white font-medium">
+            <p className={darkMode ? "text-white font-medium" : "text-gray-900 font-medium"}>
               {dragActive ? "Drop files here" : "Click to upload or drag and drop"}
             </p>
-            <p className="text-white/40 text-sm mt-1">MISMO FNM 3.4 XML files only</p>
+            <p className={`text-sm mt-1 ${darkMode ? "text-white/40" : "text-gray-400"}`}>
+              MISMO FNM 3.4 XML files only
+            </p>
           </div>
         </div>
       </div>
@@ -169,13 +184,11 @@ export default function XMLUploader() {
       {files.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-white/60">
+            <p className={`text-sm ${darkMode ? "text-white/60" : "text-gray-500"}`}>
               {files.length} file{files.length > 1 ? "s" : ""} selected
             </p>
             {successCount > 0 && (
-              <p className="text-sm text-[rgb(0,245,255)]">
-                {successCount} submitted
-              </p>
+              <p className={`text-sm ${at}`}>{successCount} submitted</p>
             )}
           </div>
 
@@ -186,29 +199,31 @@ export default function XMLUploader() {
                 className={cn(
                   "rounded-lg p-4 border transition-all",
                   file.status === "success"
-                    ? "bg-[rgb(0,245,255)]/5 border-[rgb(0,245,255)]/30"
+                    ? `${ab5} ${abrd30}`
                     : file.status === "error"
                     ? "bg-red-500/5 border-red-500/30"
-                    : "bg-white/[0.02] border-white/10"
+                    : darkMode
+                      ? "bg-white/[0.02] border-white/10"
+                      : "bg-gray-50 border-gray-200"
                 )}
               >
                 <div className="flex items-start gap-3">
                   <div className={cn(
                     "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                    file.status === "success" ? "bg-[rgb(0,245,255)]/20" : "bg-white/5"
+                    file.status === "success" ? ab20 : darkMode ? "bg-white/5" : "bg-gray-100"
                   )}>
                     <FileText className={cn(
                       "w-5 h-5",
-                      file.status === "success" ? "text-[rgb(0,245,255)]" : "text-white/40"
+                      file.status === "success" ? at : darkMode ? "text-white/40" : "text-gray-400"
                     )} />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-white font-medium truncate">
+                      <span className={`text-sm font-medium truncate ${darkMode ? "text-white" : "text-gray-900"}`}>
                         {file.name}
                       </span>
-                      <span className="text-xs text-white/40 flex-shrink-0">
+                      <span className={`text-xs flex-shrink-0 ${darkMode ? "text-white/40" : "text-gray-400"}`}>
                         {formatFileSize(file.size)}
                       </span>
                     </div>
@@ -222,23 +237,25 @@ export default function XMLUploader() {
 
                     {file.status === "success" && file.loanNumber && (
                       <div className="flex items-center gap-1 mt-1">
-                        <Check className="w-3 h-3 text-[rgb(0,245,255)]" />
-                        <p className="text-xs text-[rgb(0,245,255)]">Loan #: {file.loanNumber}</p>
+                        <Check className={`w-3 h-3 ${at}`} />
+                        <p className={`text-xs ${at}`}>Loan #: {file.loanNumber}</p>
                       </div>
                     )}
                   </div>
 
                   <div className="flex-shrink-0">
                     {file.status === "uploading" && (
-                      <Loader2 className="w-5 h-5 text-[rgb(0,245,255)] animate-spin" />
+                      <Loader2 className={`w-5 h-5 animate-spin ${at}`} />
                     )}
                     {file.status === "success" && (
-                      <Check className="w-5 h-5 text-[rgb(0,245,255)]" />
+                      <Check className={`w-5 h-5 ${at}`} />
                     )}
                     {(file.status === "pending" || file.status === "error") && (
                       <button
                         onClick={() => removeFile(file.id)}
-                        className="p-1 text-white/40 hover:text-white transition-colors"
+                        className={`p-1 transition-colors ${
+                          darkMode ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-900"
+                        }`}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -274,26 +291,34 @@ export default function XMLUploader() {
       )}
 
       {/* Success message - Large Congratulations Banner */}
-      {files.filter(f => f.status === "success" && f.loanNumber).map((file) => (
+      {files.filter((f) => f.status === "success" && f.loanNumber).map((file) => (
         <div key={file.id} className="space-y-6">
-          <div className="rounded-xl border-2 border-[rgb(0,245,255)] bg-[rgb(0,245,255)]/10 p-8 text-center space-y-4">
+          <div className={`rounded-xl border-2 p-8 text-center space-y-4 ${abrd} ${ab10}`}>
             <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-[rgb(0,245,255)]/20 flex items-center justify-center">
-                <Check className="w-10 h-10 text-[rgb(0,245,255)]" />
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${ab20}`}>
+                <Check className={`w-10 h-10 ${at}`} />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white">Congratulations!</h2>
-            <p className="text-white/80 text-lg">Your Loan ID is:</p>
-            <p className="text-4xl font-bold text-[rgb(0,245,255)]">{file.loanNumber}</p>
-            <p className="text-white/60 text-sm">Please record this in your file</p>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
+              Congratulations!
+            </h2>
+            <p className={`text-lg ${darkMode ? "text-white/80" : "text-gray-600"}`}>
+              Your Loan ID is:
+            </p>
+            <p className={`text-4xl font-bold ${at}`}>{file.loanNumber}</p>
+            <p className={`text-sm ${darkMode ? "text-white/60" : "text-gray-500"}`}>
+              Please record this in your file
+            </p>
           </div>
 
-          {/* Cognito Form Iframe - Displayed after Loan Number is issued */}
-          <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-visible w-full">
+          {/* Cognito Form Iframe - wider container */}
+          <div className={`rounded-xl border overflow-visible w-full ${
+            darkMode ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white"
+          }`}>
             <iframe
               src="https://www.cognitoforms.com/DEFY1/lsd"
               allow="payment"
-              style={{ border: 0, width: '100%', minWidth: '100%', display: 'block' }}
+              style={{ border: 0, width: "100%", minWidth: "100%", display: "block" }}
               height="2308"
               title="Loan Submission Form"
             />
