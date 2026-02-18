@@ -311,9 +311,9 @@ export default function XMLUploader({ darkMode = true }: XMLUploaderProps) {
             </p>
           </div>
 
-          {/* Cognito Form Iframe - wider container */}
-          <div className={`rounded-xl border overflow-visible w-full ${
-            darkMode ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white"
+          {/* Cognito Form Iframe - break out of CardContent padding for full width */}
+          <div className={`-mx-6 -mb-6 rounded-b-xl border-t overflow-visible ${
+            darkMode ? "border-white/10 bg-white" : "border-gray-200 bg-white"
           }`}>
             <iframe
               src="https://www.cognitoforms.com/DEFY1/lsd"
